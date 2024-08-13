@@ -1,0 +1,119 @@
+openapi: 3.0.0
+info:
+  title: More Torque API
+  description: API documentation for the More Torque taxi service.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local server
+paths:
+  /vehicles/decode/{vin}:
+    get:
+      summary: Decode VIN
+      parameters:
+        - in: path
+          name: vin
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+        '500':
+          description: Error decoding VIN
+  /vehicles:
+    post:
+      summary: Add a vehicle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vin:
+                  type: string
+                org:
+                  type: string
+              required:
+                - vin
+                - org
+      responses:
+        '201':
+          description: Vehicle added successfully
+        '400':
+          description: Invalid request
+  /vehicles/{vin}:
+    get:
+      summary: Get vehicle details
+      parameters:
+        - in: path
+          name: vin
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vehicle details
+        '400':
+          description: Invalid VIN format
+  /orgs:
+    post:
+      summary: Create a new organization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                account:
+                  type: string
+                website:
+                  type: string
+                fuelReimbursementPolicy:
+                  type: string
+                speedLimitPolicy:
+                  type: string
+              required:
+                - name
+                - account
+                - website
+      responses:
+        '201':
+          description: Organization created successfully
+        '400':
+          description: Invalid request
+    get:
+      summary: Get all organizations
+      responses:
+        '200':
+          description: List of organizations
+  /orgs/{id}:
+    patch:
+      summary: Update an organization
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account:
+                  type: string
+                website:
+                  type: string
+                fuelReimbursementPolicy:
+                  type: string
+                speedLimitPolicy:
+                  type: string
+      responses:
+        '200':
+          description: Organization updated successfully
+        '400':
+          description: Invalid request
