@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
@@ -6,7 +5,6 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 const mcache = require('memory-cache');
 const axios = require('axios');
-const mongoose = require('mongoose');
 
 const app = express();
 
@@ -42,19 +40,6 @@ function cache(req, res, next) {
   next();
 }
 
-// Authentication middleware
-function authenticate(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).send('Unauthorized');
-
-  const token = authHeader.split(' ')[1];
-  if (token === 'your-secret-token') {
-    next();
-  } else {
-    res.status(403).send('Forbidden');
-  }
-}
-
 // Mock data for organizations
 const organizations = [
   { id: '1', name: 'Org1', account: 'acc1', website: 'www.org1.com', fuelReimbursementPolicy: 'policy1', speedLimitPolicy: '20 km/h', parentId: null },
@@ -83,27 +68,11 @@ function updateOrganization(orgId, updates) {
 function updateChildren(parentId, policyType, newPolicy) {
   organizations.forEach(org => {
     if (org.parentId === parentId) {
-      if (!org[policyType]) {
-        org[policyType] = newPolicy;
-        updateChildren(org.id, policyType, newPolicy);
-      }
+      org[policyType] = newPolicy;  // Always update the policy
+      updateChildren(org.id, policyType, newPolicy);
     }
   });
 }
-
-// Database connection
-const dbURI = 'mongodb://127.0.0.1:27017/yourDatabaseName'; // Replace with your database URI
-mongoose.connect(dbURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-const db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  console.log('Connected to MongoDB successfully!');
-});
 
 // Define your routes
 app.get('/', (req, res) => {
@@ -128,7 +97,7 @@ app.get('/vehicles/decode/:vin', cache, async (req, res) => {
 });
 
 // Endpoint to add a vehicle
-app.post('/vehicles', authenticate, async (req, res) => {
+app.post('/vehicles', async (req, res) => {
   const { vin, org } = req.body;
 
   if (!/^[A-HJ-NPR-Z0-9]{17}$/.test(vin)) {
@@ -163,7 +132,7 @@ app.get('/vehicles/:vin', async (req, res) => {
 });
 
 // Endpoint to create a new organization
-app.post('/orgs', authenticate, async (req, res) => {
+app.post('/orgs', async (req, res) => {
   const { name, account, website, fuelReimbursementPolicy, speedLimitPolicy } = req.body;
 
   const defaultFuelReimbursementPolicy = '1000';
@@ -172,17 +141,23 @@ app.post('/orgs', authenticate, async (req, res) => {
     return res.status(400).send('Name, account, and website are required');
   }
 
-  res.status(201).send({
+  const newOrg = {
+    id: String(organizations.length + 1),
     name,
     account,
     website,
     fuelReimbursementPolicy: fuelReimbursementPolicy || defaultFuelReimbursementPolicy,
     speedLimitPolicy: speedLimitPolicy || 'Default Policy',
-  });
+    parentId: null,
+  };
+
+  organizations.push(newOrg);
+
+  res.status(201).send(newOrg);
 });
 
 // Endpoint to update an organization
-app.patch('/orgs/:id', authenticate, async (req, res) => {
+app.patch('/orgs/:id', async (req, res) => {
   const { id } = req.params;
   const { account, website, fuelReimbursementPolicy, speedLimitPolicy } = req.body;
 
