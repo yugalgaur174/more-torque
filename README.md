@@ -26,6 +26,7 @@ The project is built using **Node.js** and **Express.js** and includes several k
 4. **Performance Enhancements:** Includes rate limiting and caching for enhanced performance and security.
 
 ---
+![image](https://github.com/user-attachments/assets/a5569b41-ec3c-46ee-8dce-94fda2a05754)
 
 ## **API Endpoints**
 
