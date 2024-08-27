@@ -1,6 +1,6 @@
 # More-Torque
 
-An Organization & Vehicle Management API
+An Organization & Vehicle Management API's
 
 ### **Overview:**
 It is a RESTful API service designed to manage organizational hierarchies and vehicle information. The system allows users to create, update, and retrieve details of organizations and vehicles, with specific functionality to handle organizational policies such as fuel reimbursement and speed limits, including policy inheritance across a hierarchical structure of organizations.
